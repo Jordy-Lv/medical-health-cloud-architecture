@@ -1,0 +1,67 @@
+---
+title: Diagrama de Contenedores - Plataforma de Atención de Enfermería
+---
+flowchart TB
+  usuario["<b>Enfermera / Supervisora</b><br/><i>[Persona]</i><br/>Personal del centro de llamadas"]
+  idp["<b>Sistema de Seguridad Centralizado</b><br/><i>[Sistema externo]</i><br/>OIDC / OAuth 2.0"]
+
+  subgraph plataforma["Plataforma de Atención de Enfermería"]
+    direction TB
+    subgraph clientes[" "]
+      direction LR
+      web["<b>Aplicación Web</b><br/><i>[React, TypeScript]</i><br/>SPA responsiva para<br/>Windows, Linux y macOS"]
+      desktop["<b>Aplicación de Escritorio</b><br/><i>[Electron]</i><br/>Empaqueta la SPA como<br/>app nativa multiplataforma"]
+    end
+    gateway["<b>API Gateway</b><br/><i>[Azure API Management]</i><br/>Valida JWT, limita peticiones<br/>y enruta a los microservicios"]
+    subgraph micro[" "]
+      direction LR
+      historia["<b>Historia Clínica</b><br/><i>[Node.js, NestJS]</i><br/>Consulta y resume<br/>historias clínicas<br/>HU01"]
+      diagnostico["<b>Asistencia al Diagnóstico</b><br/><i>[Python, FastAPI]</i><br/>Triaje por síntomas<br/>y sugerencias<br/>HU02"]
+      centrosSvc["<b>Centros Médicos</b><br/><i>[Node.js, NestJS]</i><br/>Busca centros por cercanía<br/>y especialidad<br/>HU03"]
+      remision["<b>Remisión y Notificación</b><br/><i>[Node.js, NestJS]</i><br/>Crea remisiones y avisa<br/>al centro médico<br/>HU04"]
+      casos["<b>Llamadas y Casos</b><br/><i>[Node.js, NestJS]</i><br/>Registra llamadas,<br/>casos y auditoría"]
+    end
+    subgraph datos[" "]
+      direction LR
+      cache[("<b>Caché</b><br/><i>[Azure Cache for Redis]</i>")]
+      fhir[("<b>Repositorio Clínico</b><br/><i>[Azure Health Data<br/>Services FHIR]</i>")]
+      dbCentros[("<b>BD Centros Médicos</b><br/><i>[PostgreSQL + PostGIS]</i>")]
+      bus[["<b>Bus de Eventos</b><br/><i>[Azure Service Bus]</i>"]]
+      dbCasos[("<b>BD Casos</b><br/><i>[PostgreSQL]</i>")]
+    end
+  end
+
+  hce["<b>Sistema de Historias Clínicas</b><br/><i>[Sistema externo]</i>"]
+  motor["<b>Motor de Apoyo al Diagnóstico</b><br/><i>[Azure OpenAI]</i>"]
+  mapas["<b>Servicio de Mapas</b><br/><i>[Azure Maps]</i>"]
+  acs["<b>Servicio de Comunicaciones</b><br/><i>[Azure Communication Services]</i>"]
+
+  usuario -- "Usa [HTTPS]" --> web
+  usuario -- "Usa" --> desktop
+  web -- "Inicia sesión<br/>[OIDC + PKCE]" --> idp
+  web -- "Llama APIs<br/>[HTTPS + JWT]" --> gateway
+  desktop -- "Llama APIs<br/>[HTTPS + JWT]" --> gateway
+  gateway --> historia & diagnostico & centrosSvc & remision & casos
+  historia -- "Lee [FHIR]" --> fhir
+  historia -- "Cachea" --> cache
+  fhir -- "Sincroniza [FHIR]" --> hce
+  diagnostico -- "Consulta [HTTPS]" --> motor
+  centrosSvc -- "Consulta geoespacial" --> dbCentros
+  centrosSvc -- "Distancias y rutas" --> mapas
+  remision -- "Publica eventos" --> bus
+  bus -- "Consume eventos" --> casos
+  remision -- "Envía avisos" --> acs
+  casos -- "Lee y escribe" --> dbCasos
+
+  classDef persona fill:#08427b,stroke:#052e56,color:#ffffff
+  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff
+  classDef datos fill:#438dd5,stroke:#2e6295,color:#ffffff
+  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff
+  class usuario persona
+  class web,desktop,gateway,historia,diagnostico,centrosSvc,remision,casos contenedor
+  class cache,fhir,dbCentros,bus,dbCasos datos
+  class idp,hce,motor,mapas,acs externo
+  style plataforma fill:#ffffff,stroke:#444444,stroke-dasharray:6 4
+  style clientes fill:none,stroke:none
+  style micro fill:none,stroke:none
+  style datos fill:none,stroke:none
