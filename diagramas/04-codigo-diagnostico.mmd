@@ -1,0 +1,83 @@
+---
+title: Diagrama de Código - Servicio de Asistencia al Diagnóstico
+---
+classDiagram
+  direction LR
+  class TriajeRouter {
+    +post_triaje(solicitud: SolicitudTriaje) RespuestaTriaje
+  }
+  class SolicitudTriaje {
+    +str id_caso
+    +str id_paciente
+    +int edad
+    +str sexo
+    +list~Sintoma~ sintomas
+    +SignosVitales signos_vitales
+  }
+  class Sintoma {
+    +str codigo
+    +str descripcion
+    +int intensidad
+    +int horas_evolucion
+  }
+  class SignosVitales {
+    +float temperatura
+    +int frecuencia_cardiaca
+    +int saturacion_oxigeno
+    +str presion_arterial
+  }
+  class ServicioTriaje {
+    -MotorReglas motor_reglas
+    -Anonimizador anonimizador
+    -ClienteMotorApoyo cliente_motor
+    -AgregadorRecomendaciones agregador
+    +evaluar(solicitud) RespuestaTriaje
+  }
+  class MotorReglas {
+    -list~ReglaClinica~ reglas
+    +evaluar(solicitud) ResultadoReglas
+  }
+  class ReglaClinica {
+    <<interface>>
+    +aplica(solicitud) bool
+    +nivel_urgencia() NivelUrgencia
+  }
+  class ReglaDolorToracico
+  class ReglaDificultadRespiratoria
+  class Anonimizador {
+    +anonimizar(solicitud) dict
+  }
+  class ClienteMotorApoyo {
+    -str endpoint
+    +sugerir(datos_anonimos) list~Sugerencia~
+  }
+  class AgregadorRecomendaciones {
+    +combinar(resultado, sugerencias) RespuestaTriaje
+  }
+  class RespuestaTriaje {
+    +NivelUrgencia urgencia
+    +list~Sugerencia~ posibles_causas
+    +list~str~ signos_alarma
+    +str recomendacion
+    +bool requiere_remision
+  }
+  class NivelUrgencia {
+    <<enumeration>>
+    EMERGENCIA
+    URGENTE
+    PRIORITARIO
+    NO_URGENTE
+  }
+  TriajeRouter --> ServicioTriaje
+  TriajeRouter ..> SolicitudTriaje
+  SolicitudTriaje *-- Sintoma
+  SolicitudTriaje *-- SignosVitales
+  ServicioTriaje --> MotorReglas
+  ServicioTriaje --> Anonimizador
+  ServicioTriaje --> ClienteMotorApoyo
+  ServicioTriaje --> AgregadorRecomendaciones
+  MotorReglas o-- ReglaClinica
+  ReglaClinica <|.. ReglaDolorToracico
+  ReglaClinica <|.. ReglaDificultadRespiratoria
+  AgregadorRecomendaciones ..> RespuestaTriaje
+  RespuestaTriaje --> NivelUrgencia

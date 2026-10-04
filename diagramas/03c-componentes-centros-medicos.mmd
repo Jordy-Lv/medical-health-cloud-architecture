@@ -1,0 +1,37 @@
+---
+title: Diagrama de Componentes - Servicio de Centros Médicos (HU03)
+---
+flowchart TB
+  gateway["<b>API Gateway</b><br/><i>[Azure API Management]</i>"]
+
+  subgraph svc["Servicio de Centros Médicos [Contenedor: Node.js, NestJS]"]
+    direction TB
+    controlador["<b>Controlador de Centros</b><br/><i>[Componente: REST Controller]</i><br/>GET /centros/cercanos?direccion=&especialidad="]
+    busqueda["<b>Servicio de Búsqueda</b><br/><i>[Componente: Service]</i><br/>Orquesta geocodificación, filtro y orden"]
+    geocodificador["<b>Geocodificador</b><br/><i>[Componente]</i><br/>Dirección del paciente a coordenadas"]
+    repoGeo["<b>Repositorio Geoespacial</b><br/><i>[Componente: TypeORM + PostGIS]</i><br/>Centros dentro de un radio<br/>con la especialidad requerida"]
+    rutas["<b>Calculador de Tiempos de Llegada</b><br/><i>[Componente]</i><br/>Matriz de rutas y tiempos estimados"]
+    admin["<b>Administración de Centros</b><br/><i>[Componente]</i><br/>Alta y actualización de centros,<br/>horarios y especialidades"]
+  end
+
+  db[("<b>BD Centros Médicos</b><br/><i>[PostgreSQL + PostGIS]</i>")]
+  mapas["<b>Servicio de Mapas</b><br/><i>[Azure Maps]</i>"]
+
+  gateway -- "HTTPS + JWT" --> controlador
+  controlador --> busqueda
+  controlador --> admin
+  busqueda --> geocodificador
+  busqueda --> repoGeo
+  busqueda --> rutas
+  geocodificador -- "Search API" --> mapas
+  rutas -- "Route Matrix API" --> mapas
+  repoGeo -- "ST_DWithin / SQL" --> db
+  admin --> db
+
+  classDef componente fill:#85bbf0,stroke:#5d82a8,color:#000000
+  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff
+  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff
+  class controlador,busqueda,geocodificador,repoGeo,rutas,admin componente
+  class gateway,db contenedor
+  class mapas externo
+  style svc fill:#ffffff,stroke:#444444,stroke-dasharray:6 4

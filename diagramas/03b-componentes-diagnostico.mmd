@@ -1,0 +1,40 @@
+---
+title: Diagrama de Componentes - Servicio de Asistencia al Diagnóstico (HU02)
+---
+flowchart TB
+  gateway["<b>API Gateway</b><br/><i>[Azure API Management]</i>"]
+
+  subgraph svc["Servicio de Asistencia al Diagnóstico [Contenedor: Python, FastAPI]"]
+    direction TB
+    controlador["<b>Controlador de Triaje</b><br/><i>[Componente: FastAPI Router]</i><br/>POST /triaje"]
+    validador["<b>Validador de Síntomas</b><br/><i>[Componente: Pydantic]</i><br/>Normaliza síntomas, edad,<br/>signos vitales y duración"]
+    reglas["<b>Motor de Reglas de Triaje</b><br/><i>[Componente]</i><br/>Protocolos clínicos: detecta<br/>signos de alarma y nivel de urgencia"]
+    anonimizador["<b>Anonimizador</b><br/><i>[Componente]</i><br/>Elimina datos personales<br/>antes de consultar el motor"]
+    clienteMotor["<b>Cliente del Motor de Apoyo</b><br/><i>[Componente: SDK]</i><br/>Arma la consulta y valida la respuesta"]
+    agregador["<b>Agregador de Recomendaciones</b><br/><i>[Componente]</i><br/>Combina reglas y sugerencias.<br/>La decisión final es de la enfermera"]
+    auditoria["<b>Publicador de Auditoría</b><br/><i>[Componente]</i>"]
+  end
+
+  historia["<b>Servicio de Historia Clínica</b><br/><i>[Contenedor]</i><br/>Antecedentes del paciente"]
+  motor["<b>Motor de Apoyo al Diagnóstico</b><br/><i>[Azure OpenAI]</i>"]
+  bus[["<b>Bus de Eventos</b><br/><i>[Azure Service Bus]</i>"]]
+
+  gateway -- "HTTPS + JWT" --> controlador
+  controlador --> validador
+  validador --> reglas
+  validador --> anonimizador
+  anonimizador --> clienteMotor
+  reglas --> agregador
+  clienteMotor --> agregador
+  controlador -- "Antecedentes [HTTPS]" --> historia
+  clienteMotor -- "HTTPS, red privada" --> motor
+  agregador --> auditoria
+  auditoria -- "Evento TriajeRealizado" --> bus
+
+  classDef componente fill:#85bbf0,stroke:#5d82a8,color:#000000
+  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff
+  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff
+  class controlador,validador,reglas,anonimizador,clienteMotor,agregador,auditoria componente
+  class gateway,historia,bus contenedor
+  class motor externo
+  style svc fill:#ffffff,stroke:#444444,stroke-dasharray:6 4

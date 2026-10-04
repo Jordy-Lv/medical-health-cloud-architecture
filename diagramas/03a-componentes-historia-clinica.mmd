@@ -1,0 +1,38 @@
+---
+title: Diagrama de Componentes - Servicio de Historia Clínica (HU01)
+---
+flowchart TB
+  gateway["<b>API Gateway</b><br/><i>[Azure API Management]</i>"]
+
+  subgraph svc["Servicio de Historia Clínica [Contenedor: Node.js, NestJS]"]
+    direction TB
+    controlador["<b>Controlador de Historia Clínica</b><br/><i>[Componente: REST Controller]</i><br/>GET /pacientes/{id}/historia<br/>GET /pacientes?documento="]
+    guard["<b>Guard de Autorización</b><br/><i>[Componente: NestJS Guard]</i><br/>Valida JWT y rol de enfermera"]
+    servicio["<b>Servicio de Consulta Clínica</b><br/><i>[Componente: Service]</i><br/>Orquesta la búsqueda y el resumen"]
+    resumidor["<b>Generador de Resumen Clínico</b><br/><i>[Componente]</i><br/>Alergias, medicación, diagnósticos<br/>y últimas atenciones"]
+    clienteFhir["<b>Cliente FHIR</b><br/><i>[Componente: HTTP Client]</i><br/>Patient, Condition, AllergyIntolerance,<br/>MedicationStatement, Encounter"]
+    cacheRepo["<b>Repositorio de Caché</b><br/><i>[Componente]</i><br/>TTL corto, datos cifrados"]
+    auditoria["<b>Publicador de Auditoría</b><br/><i>[Componente]</i><br/>Registra quién consultó qué historia"]
+  end
+
+  fhir[("<b>Repositorio Clínico</b><br/><i>[Azure Health Data Services FHIR]</i>")]
+  cache[("<b>Caché</b><br/><i>[Azure Cache for Redis]</i>")]
+  bus[["<b>Bus de Eventos</b><br/><i>[Azure Service Bus]</i>"]]
+
+  gateway -- "HTTPS + JWT" --> controlador
+  controlador --> guard
+  controlador --> servicio
+  servicio --> resumidor
+  servicio --> clienteFhir
+  servicio --> cacheRepo
+  servicio --> auditoria
+  clienteFhir -- "FHIR R4 / HTTPS" --> fhir
+  cacheRepo --> cache
+  auditoria -- "Evento HistoriaConsultada" --> bus
+
+  classDef componente fill:#85bbf0,stroke:#5d82a8,color:#000000
+  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff
+  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff
+  class controlador,guard,servicio,resumidor,clienteFhir,cacheRepo,auditoria componente
+  class gateway,fhir,cache,bus contenedor
+  style svc fill:#ffffff,stroke:#444444,stroke-dasharray:6 4
