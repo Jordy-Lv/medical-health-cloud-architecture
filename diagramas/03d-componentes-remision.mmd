@@ -1,41 +1,29 @@
 ---
-title: Diagrama de Componentes - Servicio de Remisión y Notificación (HU04)
+title: Componentes · Remisión y Notificación (HU04)
 ---
-flowchart TB
-  gateway["<b>API Gateway</b><br/><i>[Azure API Management]</i>"]
-
-  subgraph svc["Servicio de Remisión y Notificación [Contenedor: Node.js, NestJS]"]
-    direction TB
-    controlador["<b>Controlador de Remisiones</b><br/><i>[Componente: REST Controller]</i><br/>POST /remisiones<br/>GET /remisiones/{id}"]
-    servicio["<b>Servicio de Remisión</b><br/><i>[Componente: Service]</i><br/>Valida y registra la remisión"]
-    repo["<b>Repositorio de Remisiones</b><br/><i>[Componente: TypeORM]</i>"]
-    publicador["<b>Publicador de Eventos</b><br/><i>[Componente]</i><br/>Evento RemisionCreada"]
-    worker["<b>Procesador de Notificaciones</b><br/><i>[Componente: Worker]</i><br/>Elige canal según el centro<br/>y confirma la recepción"]
-    plantillas["<b>Plantillas de Mensaje</b><br/><i>[Componente]</i><br/>Datos mínimos del paciente,<br/>motivo y hora estimada de llegada"]
-    reintentos["<b>Gestor de Reintentos</b><br/><i>[Componente]</i><br/>Reintento exponencial<br/>y cola de mensajes fallidos"]
+flowchart LR
+  gateway["<b>API Gateway</b>"]
+  subgraph svc["Servicio de Remisión y Notificación"]
+    direction LR
+    controlador["<b>Controlador</b>"]
+    servicio["<b>Servicio de Remisión</b>"]
+    repo["<b>Repositorio</b>"]
+    publicador["<b>Publicador<br/>de Eventos</b>"]
+    worker["<b>Procesador de<br/>Notificaciones</b><br/><i>Con reintentos</i>"]
   end
-
-  db[("<b>BD Casos</b><br/><i>[PostgreSQL]</i>")]
-  bus[["<b>Bus de Eventos</b><br/><i>[Azure Service Bus]</i>"]]
-  acs["<b>Servicio de Comunicaciones</b><br/><i>[Azure Communication Services]</i>"]
-  centros["<b>Centro Médico</b><br/><i>[Sistema externo]</i>"]
-
-  gateway -- "HTTPS + JWT" --> controlador
-  controlador --> servicio
-  servicio --> repo
-  servicio --> publicador
-  repo --> db
-  publicador -- "Publica" --> bus
-  bus -- "Consume" --> worker
-  worker --> plantillas
-  worker --> reintentos
-  worker -- "Llamada / SMS / Email" --> acs
-  acs -- "Aviso de llegada" --> centros
-
-  classDef componente fill:#85bbf0,stroke:#5d82a8,color:#000000
-  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff
-  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff
-  class controlador,servicio,repo,publicador,worker,plantillas,reintentos componente
+  db[("<b>BD Casos</b>")]
+  bus[["<b>Service Bus</b>"]]
+  acs["<b>Comunicaciones</b><br/><i>Voz · SMS · Email</i>"]
+  centro["<b>Centro Médico</b>"]
+  gateway --> controlador --> servicio
+  servicio --> repo --> db
+  servicio --> publicador --> bus --> worker --> acs --> centro
+  classDef persona fill:#08427b,stroke:#052e56,color:#ffffff,font-size:20px
+  classDef sistema fill:#1168bd,stroke:#0b4884,color:#ffffff,font-size:22px
+  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff,font-size:20px
+  classDef componente fill:#85bbf0,stroke:#5d82a8,color:#000000,font-size:20px
+  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff,font-size:20px
+  class controlador,servicio,repo,publicador,worker componente
   class gateway,db,bus contenedor
-  class acs,centros externo
+  class acs,centro externo
   style svc fill:#ffffff,stroke:#444444,stroke-dasharray:6 4

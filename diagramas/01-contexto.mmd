@@ -1,34 +1,36 @@
 ---
-title: Diagrama de Contexto - Plataforma de Atención de Enfermería Medical Health
+title: Diagrama de Contexto
 ---
-flowchart TB
-  paciente["<b>Paciente</b><br/><i>[Persona]</i><br/>Llama al centro de llamadas con dudas<br/>sobre su salud. En la fase 2 usará<br/>la aplicación directamente."]
-  enfermera["<b>Enfermera</b><br/><i>[Persona]</i><br/>Atiende las llamadas de los pacientes.<br/>250 o más usuarias concurrentes."]
-  supervisora["<b>Supervisora</b><br/><i>[Persona]</i><br/>Supervisa casos, turnos e<br/>indicadores del centro de llamadas."]
+flowchart LR
+  paciente["<b>Paciente</b><br/><i>Persona</i>"]
+  enfermera["<b>Enfermera</b><br/><i>Persona · 250 o más</i>"]
+  supervisora["<b>Supervisora</b><br/><i>Persona</i>"]
 
-  plataforma["<b>Plataforma de Atención de Enfermería</b><br/><i>[Sistema de software]</i><br/>Consulta historias clínicas, asiste el diagnóstico,<br/>ubica centros médicos y gestiona remisiones."]
+  plataforma["<b>Plataforma de Atención<br/>de Enfermería</b><br/><i>Nuestro sistema</i>"]
 
-  idp["<b>Sistema de Seguridad Centralizado</b><br/><i>[Sistema externo]</i><br/>Proveedor de identidad corporativo<br/>OpenID Connect / OAuth 2.0"]
-  hce["<b>Sistema de Historias Clínicas</b><br/><i>[Sistema externo]</i><br/>Historias clínicas del hospital<br/>expuestas en HL7 FHIR"]
-  motor["<b>Motor de Apoyo al Diagnóstico</b><br/><i>[Sistema externo]</i><br/>Modelo de lenguaje gestionado<br/>para sugerencias clínicas"]
-  mapas["<b>Servicio de Mapas</b><br/><i>[Sistema externo]</i><br/>Geocodificación, distancias y rutas"]
-  comunicaciones["<b>Servicio de Comunicaciones</b><br/><i>[Sistema externo]</i><br/>Llamadas, SMS y correo electrónico"]
-  centros["<b>Centros Médicos de la Red</b><br/><i>[Sistema externo]</i><br/>Clínicas y hospitales que reciben<br/>a los pacientes remitidos"]
+  idp["<b>Seguridad Centralizada</b><br/><i>OIDC / OAuth 2.0</i>"]
+  hce["<b>Historias Clínicas</b><br/><i>HL7 FHIR</i>"]
+  motor["<b>Apoyo al Diagnóstico</b><br/><i>Modelo de lenguaje</i>"]
+  mapas["<b>Mapas</b><br/><i>Distancias y rutas</i>"]
+  com["<b>Comunicaciones</b><br/><i>Voz · SMS · Email</i>"]
+  centros["<b>Centros Médicos</b><br/><i>Reciben al paciente</i>"]
 
-  paciente -- "Llama y describe<br/>sus síntomas" --> enfermera
-  paciente -. "Fase 2: usa la app<br/>[HTTPS]" .-> plataforma
-  enfermera -- "Consulta y registra la atención<br/>[HTTPS]" --> plataforma
-  supervisora -- "Monitorea casos e indicadores<br/>[HTTPS]" --> plataforma
-  plataforma -- "Autentica y autoriza<br/>[OIDC]" --> idp
-  plataforma -- "Lee historias clínicas<br/>[FHIR / HTTPS]" --> hce
-  plataforma -- "Solicita sugerencias<br/>[HTTPS]" --> motor
-  plataforma -- "Busca centros cercanos<br/>[HTTPS]" --> mapas
-  plataforma -- "Envía avisos de remisión<br/>[HTTPS]" --> comunicaciones
-  comunicaciones -- "Notifica llegada del paciente<br/>[Voz / SMS / Email]" --> centros
+  paciente -- "Llama" --> enfermera
+  paciente -. "Fase 2" .-> plataforma
+  enfermera -- "Usa" --> plataforma
+  supervisora -- "Monitorea" --> plataforma
+  plataforma -- "Autentica" --> idp
+  plataforma -- "Consulta" --> hce
+  plataforma -- "Triaje" --> motor
+  plataforma -- "Busca centros" --> mapas
+  plataforma -- "Avisa" --> com
+  com -- "Notifica" --> centros
 
-  classDef persona fill:#08427b,stroke:#052e56,color:#ffffff
-  classDef sistema fill:#1168bd,stroke:#0b4884,color:#ffffff
-  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff
+  classDef persona fill:#08427b,stroke:#052e56,color:#ffffff,font-size:20px
+  classDef sistema fill:#1168bd,stroke:#0b4884,color:#ffffff,font-size:22px
+  classDef contenedor fill:#438dd5,stroke:#2e6295,color:#ffffff,font-size:20px
+  classDef componente fill:#85bbf0,stroke:#5d82a8,color:#000000,font-size:20px
+  classDef externo fill:#8a8a8a,stroke:#6b6b6b,color:#ffffff,font-size:20px
   class paciente,enfermera,supervisora persona
   class plataforma sistema
-  class idp,hce,motor,mapas,comunicaciones,centros externo
+  class idp,hce,motor,mapas,com,centros externo

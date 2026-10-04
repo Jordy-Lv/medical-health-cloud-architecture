@@ -1,0 +1,22 @@
+---
+title: Flujo de una Atención
+---
+flowchart LR
+  p1(["<b>1. Inicia sesión</b><br/><i>Sistema corporativo</i>"])
+  p2["<b>2. Recibe la llamada</b>"]
+  p3["<b>3. Consulta la<br/>historia clínica</b><br/><i>HU01</i>"]
+  p4["<b>4. Registra síntomas</b><br/><i>HU02 · urgencia</i>"]
+  d{"<b>¿Debe ir a<br/>un centro?</b>"}
+  p5["<b>5. Busca el centro<br/>más cercano</b><br/><i>HU03</i>"]
+  p6["<b>6. Remite y avisa<br/>al centro</b><br/><i>HU04</i>"]
+  pc["<b>Indicaciones de<br/>autocuidado</b>"]
+  fin(["<b>7. Cierra el caso</b>"])
+  p1 --> p2 --> p3 --> p4 --> d
+  d -- "Sí" --> p5 --> p6 --> fin
+  d -- "No" --> pc --> fin
+  classDef paso fill:#1168bd,stroke:#0b4884,color:#ffffff,font-size:20px
+  classDef dec fill:#f29a3e,stroke:#c4741f,color:#000000,font-size:20px
+  classDef ok fill:#107c10,stroke:#0b5a0b,color:#ffffff,font-size:20px
+  class p1,p2,p3,p4,p5,p6,pc paso
+  class d dec
+  class fin ok
