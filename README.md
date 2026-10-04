@@ -14,9 +14,3 @@ Proyecto de arquitectura distribuida para el centro de llamadas de enfermería d
 ## Arquitectura
 
 ![Arquitectura en Azure](diagramas/05-nube-azure.png)
-
-## Equipo
-
-- Yomaira Pardo Pajaro
-- Sebastian Aparicio
-- Liris Castillo
