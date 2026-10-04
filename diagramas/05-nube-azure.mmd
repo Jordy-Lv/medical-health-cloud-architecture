@@ -1,0 +1,68 @@
+---
+title: Arquitectura en la Nube - Microsoft Azure (Activo / Pasivo en dos regiones)
+---
+flowchart TB
+  usuarios["<b>Enfermeras y supervisoras</b><br/>Web responsiva y app Electron<br/>Windows · Linux · macOS"]
+  entra["<b>Microsoft Entra ID</b><br/>Federado con el sistema de<br/>seguridad corporativo (OIDC)"]
+  afd["<b>Azure Front Door Premium + WAF</b><br/>Azure DNS · TLS 1.2+ · balanceo global<br/>failover por sondeo de salud"]
+
+  usuarios -- "1. Login OIDC" --> entra
+  usuarios -- "2. HTTPS + JWT" --> afd
+
+  subgraph primaria["Región primaria · East US 2 · ACTIVA"]
+    direction TB
+    apim1["<b>API Management</b><br/>Premium · zonas 1 y 2"]
+    aks1["<b>Azure Kubernetes Service</b><br/>Nodos en zonas 1, 2 y 3 · 3 a 12 nodos<br/>Historia · Diagnóstico · Centros<br/>Remisión · Casos"]
+    pg1[("<b>PostgreSQL Flexible</b><br/>HA zona-redundante")]
+    redis1[("<b>Azure Cache<br/>for Redis</b>")]
+    sb1[["<b>Service Bus</b><br/>Premium"]]
+    blob1[("<b>Blob Storage</b><br/>ZRS")]
+    kv1["<b>Key Vault</b><br/>Secretos y certificados"]
+    fhir["<b>Health Data Services</b><br/>FHIR R4"]
+    aoai["<b>Azure OpenAI</b><br/>Endpoint privado"]
+    apim1 --> aks1
+    aks1 -- "Private Endpoints" --> pg1
+    aks1 --> redis1 & sb1 & blob1 & kv1
+    aks1 --> fhir & aoai
+  end
+
+  subgraph secundaria["Región secundaria · Central US · PASIVA"]
+    direction TB
+    apim2["<b>API Management</b><br/>Unidad regional"]
+    aks2["<b>Azure Kubernetes Service</b><br/>2 nodos en espera<br/>escala al activarse"]
+    pg2[("<b>PostgreSQL</b><br/>Réplica geo de lectura")]
+    blob2[("<b>Blob Storage</b><br/>GRS")]
+    apim2 --> aks2
+    aks2 --> pg2
+  end
+
+  afd == "Tráfico activo" ==> apim1
+  afd -. "Failover automático" .-> apim2
+  pg1 -. "Replicación asíncrona" .-> pg2
+  blob1 -. "Replicación geo" .-> blob2
+
+  subgraph transversales["Servicios compartidos"]
+    direction LR
+    maps["<b>Azure Maps</b><br/>Geocodificación y rutas"]
+    acs["<b>Communication Services</b><br/>Voz · SMS · Email"]
+    monitor["<b>Azure Monitor</b><br/>Log Analytics · App Insights<br/>Prometheus · Grafana · Alertas"]
+    defender["<b>Defender for Cloud</b><br/>Postura de seguridad"]
+    acr["<b>Container Registry</b><br/>Geo-replicado · GitHub Actions"]
+  end
+
+  aks1 --> transversales
+  aks2 -.-> transversales
+
+  classDef az fill:#0078d4,stroke:#005a9e,color:#ffffff
+  classDef datos fill:#50a0e6,stroke:#2b6fa8,color:#ffffff
+  classDef pasivo fill:#b4c9dc,stroke:#6f8fae,color:#000000
+  classDef usuario fill:#08427b,stroke:#052e56,color:#ffffff
+  classDef sec fill:#107c10,stroke:#0b5a0b,color:#ffffff
+  class usuarios usuario
+  class afd,apim1,aks1,fhir,aoai,maps,acs,monitor,acr az
+  class pg1,redis1,sb1,blob1 datos
+  class entra,kv1,defender sec
+  class apim2,aks2,pg2,blob2 pasivo
+  style primaria fill:#eef6ee,stroke:#107c10,stroke-width:2px
+  style secundaria fill:#f5f5f5,stroke:#888888,stroke-width:2px,stroke-dasharray:6 4
+  style transversales fill:#f3f8fd,stroke:#0078d4

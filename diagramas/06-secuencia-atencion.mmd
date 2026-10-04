@@ -1,0 +1,47 @@
+---
+title: Flujo de una Atención - de la llamada a la remisión
+---
+sequenceDiagram
+  autonumber
+  actor P as Paciente
+  actor E as Enfermera
+  participant App as App Web / Electron
+  participant IdP as Entra ID (OIDC)
+  participant GW as API Gateway
+  participant HC as Historia Clínica
+  participant DX as Diagnóstico
+  participant CM as Centros Médicos
+  participant RM as Remisión
+  participant SB as Service Bus
+  participant ACS as Communication Services
+  participant C as Centro Médico
+
+  E->>App: Inicia turno
+  App->>IdP: Autorización OIDC + PKCE
+  IdP-->>App: ID token y access token (JWT)
+  P->>E: Llama y describe síntomas
+  E->>App: Busca al paciente
+  App->>GW: GET /pacientes/{id}/historia
+  GW->>HC: Reenvía (JWT validado)
+  HC-->>App: Resumen clínico
+  E->>App: Registra síntomas
+  App->>GW: POST /triaje
+  GW->>DX: Reenvía
+  DX-->>App: Nivel de urgencia y posibles causas
+  alt Requiere atención presencial
+    App->>GW: GET /centros/cercanos
+    GW->>CM: Reenvía
+    CM-->>App: Centros ordenados por tiempo de llegada
+    E->>App: Selecciona centro y confirma remisión
+    App->>GW: POST /remisiones
+    GW->>RM: Reenvía
+    RM->>SB: Publica RemisionCreada
+    RM-->>App: 202 Aceptada
+    SB->>RM: Procesador de notificaciones
+    RM->>ACS: Envía aviso (voz / SMS / email)
+    ACS->>C: Aviso de llegada del paciente
+    C-->>ACS: Confirma recepción
+  else Manejo en casa
+    E->>P: Da indicaciones de autocuidado
+  end
+  E->>App: Cierra el caso
