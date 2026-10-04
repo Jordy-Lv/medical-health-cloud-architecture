@@ -11,7 +11,7 @@ flowchart TB
 
   subgraph primaria["Región primaria · East US 2 · ACTIVA"]
     direction TB
-    apim1["<b>API Management</b><br/>Premium · zonas 1 y 2"]
+    apim1["<b>API Management</b><br/>Standard v2"]
     aks1["<b>Azure Kubernetes Service</b><br/>Nodos en zonas 1, 2 y 3 · 3 a 12 nodos<br/>Historia · Diagnóstico · Centros<br/>Remisión · Casos"]
     pg1[("<b>PostgreSQL Flexible</b><br/>HA zona-redundante")]
     redis1[("<b>Azure Cache<br/>for Redis</b>")]
@@ -28,7 +28,7 @@ flowchart TB
 
   subgraph secundaria["Región secundaria · Central US · PASIVA"]
     direction TB
-    apim2["<b>API Management</b><br/>Unidad regional"]
+    apim2["<b>API Management</b><br/>Standard v2 en espera"]
     aks2["<b>Azure Kubernetes Service</b><br/>2 nodos en espera<br/>escala al activarse"]
     pg2[("<b>PostgreSQL</b><br/>Réplica geo de lectura")]
     blob2[("<b>Blob Storage</b><br/>GRS")]
