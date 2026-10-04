@@ -44,7 +44,7 @@ La solución se documenta con el **modelo C4**, se despliega en **Microsoft Azur
 ![Arquitectura en Azure](diagramas/05-nube-azure.png)
 
 ### Flujo de una atención
-- [Diagrama de secuencia](diagramas/06-secuencia-atencion.png)
+![Flujo de una atención](diagramas/06-flujo-atencion.png)
 
 ## Decisiones principales
 
@@ -57,23 +57,23 @@ La solución se documenta con el **modelo C4**, se despliega en **Microsoft Azur
 
 ## Costos
 
+Valores en pesos colombianos (COP) por mes.
+
 | | Azure | AWS |
 |---|---|---|
-| Pago por uso (mensual) | $7.923 | $5.121 |
-| Con reservas a 1 año (mensual) | $6.669 | |
-| Con reservas a 3 años (mensual) | $6.245 | |
+| Pago por uso | $25.934.373 | $16.763.389 |
+| Con reservas a 1 año | $21.831.013 | |
+| Con reservas a 3 años | $20.443.500 | |
 
-Precios de lista en USD consultados en octubre de 2026. El Excel tiene una hoja de **Supuestos** editable: al cambiar el número de enfermeras, llamadas o nodos, todas las hojas se recalculan.
+Los precios de lista se consultaron en dólares en octubre de 2026 y se convirtieron con la TRM de **$3.273,49** (Banco de la República, vigente del 3 al 5 de octubre de 2026). El Excel tiene una hoja de **Supuestos** editable: al cambiar la TRM, el número de enfermeras, las llamadas o los nodos, todas las hojas se recalculan.
 
 ## Equipo
 
-| Rol | Integrante |
+| Integrante | Rol |
 |---|---|
-| Arquitecto(a) de soluciones | |
-| Ingeniero(a) cloud y DevOps | |
-| Especialista en seguridad | |
-| Analista de costos (FinOps) | |
-| Líder de presentación y documentación | |
+| Yomaira Pardo Pajaro | Arquitecta de soluciones y líder de la presentación |
+| Sebastian Aparicio | Ingeniero cloud, DevOps y seguridad |
+| Liris Castillo | Analista de costos (FinOps) y documentación |
 
 ## Editar los diagramas
 
